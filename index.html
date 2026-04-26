@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LinkGuard — Link Safety Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0b0f1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      border-bottom: 1px solid #1e2d45;
+    }
+
+    .logo { font-size: 1.2rem; font-weight: 700; color: #fff; }
+    .logo span { color: #f43f5e; }
+
+    .nav-tag {
+      font-size: 0.75rem;
+      color: #64748b;
+      background: #1e2d45;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 70px 20px 50px;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 .red { color: #f43f5e; }
+
+    .hero p {
+      color: #64748b;
+      font-size: 1rem;
+      max-width: 440px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    /* ── FORM ── */
+    .form-wrap {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #111827;
+      border: 1px solid #1e2d45;
+      border-radius: 16px;
+      padding: 30px;
+    }
+
+    .form-wrap label {
+      display: block;
+      font-size: 0.8rem;
+      color: #64748b;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .input-row { display: flex; gap: 10px; }
+
+    .input-row input {
+      flex: 1;
+      background: #0b0f1a;
+      border: 1px solid #1e2d45;
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      font-family: 'Inter', monospace;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-row input:focus { border-color: #3b82f6; }
+    .input-row input::placeholder { color: #334155; }
+
+    .input-row button {
+      background: #f43f5e;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 24px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .input-row button:hover { background: #e11d48; }
+
+    /* ── RESULT ── */
+    .result {
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result.danger {
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid #f43f5e;
+      color: #f43f5e;
+    }
+
+    .result.safe {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid #22c55e;
+      color: #22c55e;
+    }
+
+    .result.neutral {
+      background: rgba(234, 179, 8, 0.1);
+      border: 1px solid #eab308;
+      color: #eab308;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      text-align: center;
+      margin: 70px 0 36px;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .section-title span { color: #f43f5e; }
+
+    /* ── CARDS ── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: #111827;
+      border-radius: 16px;
+      padding: 28px;
+      border-top: 3px solid;
+    }
+
+    .card.danger { border-color: #f43f5e; }
+    .card.safe   { border-color: #22c55e; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .card-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .card.danger .card-icon { background: rgba(244,63,94,0.15); }
+    .card.safe   .card-icon { background: rgba(34,197,94,0.12); }
+
+    .card-header h3 { font-size: 1rem; font-weight: 700; }
+    .card.danger .card-header h3 { color: #f43f5e; }
+    .card.safe   .card-header h3 { color: #22c55e; }
+
+    /* ── URL PILLS ── */
+    .url-pill {
+      font-family: monospace;
+      font-size: 0.8rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: block;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .card.danger .url-pill {
+      background: rgba(244,63,94,0.08);
+      color: #fca5a5;
+      border: 1px solid rgba(244,63,94,0.2);
+    }
+
+    .card.safe .url-pill {
+      background: rgba(34,197,94,0.07);
+      color: #86efac;
+      border: 1px solid rgba(34,197,94,0.18);
+    }
+
+    /* ── TRAITS LIST ── */
+    .traits { list-style: none; margin-top: 18px; }
+
+    .traits li {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      padding: 7px 0;
+      border-bottom: 1px solid #1e2d45;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      line-height: 1.5;
+    }
+
+    .traits li:last-child { border-bottom: none; }
+
+    .card.danger .traits li .dot { color: #f43f5e; }
+    .card.safe   .traits li .dot { color: #22c55e; }
+
+    /* ── TIPS STRIP ── */
+    .tips {
+      max-width: 960px;
+      margin: 50px auto 70px;
+      padding: 0 20px;
+    }
+
+    .tips-inner {
+      background: #111827;
+      border: 1px solid #1e2d45;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .tips-title {
+      padding: 20px 24px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #1e2d45;
+    }
+
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .tip {
+      padding: 20px 24px;
+      border-right: 1px solid #1e2d45;
+    }
+
+    .tip:last-child { border-right: none; }
+
+    .tip-num {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 8px;
+    }
+
+    .tip p {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.8rem;
+      color: #334155;
+      border-top: 1px solid #1e2d45;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 650px) {
+      nav { padding: 16px 20px; }
+      .hero h1 { font-size: 2rem; }
+      .cards { grid-template-columns: 1fr; }
+      .input-row { flex-direction: column; }
+      .tips-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Link<span>Guard</span></div>
+    <div class="nav-tag">🔒 Stay Safe Online</div>
+  </nav>
+
+  <!-- HERO + FORM -->
+  <section class="hero">
+    <h1>Is this link <span class="red">safe</span> to click?</h1>
+    <p>Paste any URL below and we'll analyze it for phishing, malware, and other threats instantly.</p>
+
+    <div class="form-wrap">
+      <label for="url">Enter a URL to check</label>
+      <form method="POST" action="/check">
+        <div class="input-row">
+          <input type="text" id="url" name="url" placeholder="https://example.com/some-link" autocomplete="off" required />
+          <button type="submit">🔍 Check</button>
+        </div>
+
+        {% if result %}
+        <div class="result {% if 'malicious' in result|lower or 'phishing' in result|lower or 'suspicious' in result|lower %}danger{% elif 'safe' in result|lower or 'benign' in result|lower or 'clean' in result|lower %}safe{% else %}neutral{% endif %}">
+          {% if 'malicious' in result|lower or 'phishing' in result|lower or 'suspicious' in result|lower %}
+            ⚠️
+          {% elif 'safe' in result|lower or 'benign' in result|lower or 'clean' in result|lower %}
+            ✅
+          {% else %}
+            ℹ️
+          {% endif %}
+          Prediction: {{ result }}
+        </div>
+        {% endif %}
+
+      </form>
+    </div>
+  </section>
+
+  <!-- EDUCATION SECTION -->
+  <h2 class="section-title">Know what a <span>malicious</span> link looks like</h2>
+
+  <div class="cards">
+
+    <!-- DANGEROUS CARD -->
+    <div class="card danger">
+      <div class="card-header">
+        <div class="card-icon">☠️</div>
+        <h3>Malicious Links — Red Flags</h3>
+      </div>
+
+      <span class="url-pill">http://paypa1-secure-login.ru/verify</span>
+      <span class="url-pill">https://amaz0n-account.info/reset?user=you</span>
+      <span class="url-pill">http://bit.ly/3xFrEe-iPhone-2024</span>
+
+      <ul class="traits">
+        <li><span class="dot">▸</span> Misspelled brand names — paypa<strong>1</strong>, amaz<strong>0</strong>n, g00gle</li>
+        <li><span class="dot">▸</span> Suspicious domains: <code>.ru</code>, <code>.info</code>, <code>.xyz</code>, <code>.tk</code></li>
+        <li><span class="dot">▸</span> Uses URL shorteners to hide the real destination</li>
+        <li><span class="dot">▸</span> <code>http://</code> instead of <code>https://</code> — no encryption</li>
+        <li><span class="dot">▸</span> Urgency words: "verify", "reset", "confirm now", "limited"</li>
+        <li><span class="dot">▸</span> Random numbers or excessive hyphens in domain name</li>
+        <li><span class="dot">▸</span> IP address used instead of a real domain — e.g. <code>http://192.168.1.1/login</code></li>
+      </ul>
+    </div>
+
+    <!-- SAFE CARD -->
+    <div class="card safe">
+      <div class="card-header">
+        <div class="card-icon">🛡️</div>
+        <h3>Benign Links — Safe Signs</h3>
+      </div>
+
+      <span class="url-pill">https://www.paypal.com/signin</span>
+      <span class="url-pill">https://amazon.com/account/manage</span>
+      <span class="url-pill">https://github.com/openai/gpt-4</span>
+
+      <ul class="traits">
+        <li><span class="dot">▸</span> Exact, correct brand spelling with a known domain</li>
+        <li><span class="dot">▸</span> Trusted TLDs: <code>.com</code>, <code>.org</code>, <code>.gov</code>, <code>.edu</code></li>
+        <li><span class="dot">▸</span> Full visible URL — no shortener, no redirection</li>
+        <li><span class="dot">▸</span> Always uses <code>https://</code> with a padlock in your browser</li>
+        <li><span class="dot">▸</span> Clean, readable path that makes logical sense</li>
+        <li><span class="dot">▸</span> No excessive subdomains, hyphens, or random strings</li>
+        <li><span class="dot">▸</span> Matches the context it was shared in — email, website, message</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- QUICK TIPS -->
+  <div class="tips">
+    <div class="tips-inner">
+      <div class="tips-title">⚡ Quick Safety Rules</div>
+      <div class="tips-grid">
+        <div class="tip">
+          <div class="tip-num">01</div>
+          <p>Hover before you click — check the URL shown in the status bar first.</p>
+        </div>
+        <div class="tip">
+          <div class="tip-num">02</div>
+          <p>Never trust a link sent in an unsolicited email or text message.</p>
+        </div>
+        <div class="tip">
+          <div class="tip-num">03</div>
+          <p>Expand short URLs using a preview tool before visiting them.</p>
+        </div>
+        <div class="tip">
+          <div class="tip-num">04</div>
+          <p>Always check for HTTPS and a padlock icon in the browser bar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    &copy; 2025 LinkGuard · Built to keep you safe online
+  </footer>
+
+</body>
+</html>
